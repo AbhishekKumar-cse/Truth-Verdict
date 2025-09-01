@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes bg-pan {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 body {
   font-family: 'Inter', sans-serif;
 }
@@ -12,7 +18,7 @@ body {
     --foreground: 222 84% 5%;
     --background-start-rgb: 227, 242, 253; /* E3F2FD in RGB */
     --background-end-rgb: 243, 237, 247;   /* F3EDF7 derived from #9575CD accent */
-    --card: 0 0% 100%;
+    --card: 0 0% 100% / 0.6; /* Glassmorphism: White with opacity */
     --card-foreground: 222 84% 5%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 84% 5%;
@@ -35,13 +41,13 @@ body {
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --sidebar-background: 222 47% 11%;
+    --sidebar-background: 222 47% 11% / 0.8; /* Glassmorphism */
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 207 82% 67%;
     --sidebar-primary-foreground: 222 84% 5%;
     --sidebar-accent: 222 47% 15%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 222 47% 15%;
+    --sidebar-border: 222 47% 20%;
     --sidebar-ring: 207 82% 67%;
   }
   .dark {
@@ -49,7 +55,7 @@ body {
     --foreground: 210 40% 98%;
     --background-start-rgb: 30, 41, 59;
     --background-end-rgb: 51, 65, 85;
-    --card: 222 47% 15%;
+    --card: 222 47% 15% / 0.6; /* Glassmorphism: Dark with opacity */
     --card-foreground: 210 40% 98%;
     --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
@@ -64,15 +70,15 @@ body {
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
     --border: 217 33% 22%;
-    --input: 217 33% 22%;
+    --input: 217 33% 22% / 0.7; /* Glassmorphism */
     --ring: 207 82% 67%;
-    --sidebar-background: 222 47% 9%;
+    --sidebar-background: 222 47% 9% / 0.8; /* Glassmorphism */
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 207 82% 67%;
     --sidebar-primary-foreground: 222 84% 5%;
     --sidebar-accent: 222 47% 13%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 222 47% 13%;
+    --sidebar-border: 222 47% 18%;
     --sidebar-ring: 207 82% 67%;
   }
 }
@@ -83,7 +89,9 @@ body {
   }
   body {
     @apply bg-background text-foreground;
-    @apply bg-gradient-to-br from-[rgb(var(--background-start-rgb))] to-[rgb(var(--background-end-rgb))];
+    background: linear-gradient(300deg, rgb(var(--background-start-rgb)), rgb(var(--background-end-rgb)), hsl(var(--primary) / 0.2));
+    background-size: 180% 180%;
+    animation: bg-pan 12s ease infinite;
   }
 }
 
