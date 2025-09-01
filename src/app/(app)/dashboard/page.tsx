@@ -25,7 +25,7 @@ export default function DashboardPage() {
         <div className="space-y-6">
             <ReportDisplay report={report} />
             <div className="text-center">
-                <Button onClick={handleNewCheck} size="lg">
+                <Button onClick={handleNewCheck} size="lg" className="transition-transform hover:scale-105 hover:shadow-lg">
                     Check Another Claim
                 </Button>
             </div>

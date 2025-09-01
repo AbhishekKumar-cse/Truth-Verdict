@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScoreCircle } from "./score-circle";
-import { ExternalLink, FileDown } from "lucide-react";
+import { ExternalLink, FileDown, Twitter, Linkedin } from "lucide-react";
 import type { ReportWithId } from "@/app/(app)/dashboard/page";
 import { Button } from "../ui/button";
 
@@ -29,8 +29,14 @@ export function ReportDisplay({ report }: ReportDisplayProps) {
     });
   };
 
+  const shareText = `This claim was rated with a TruthScore of ${report.truthScore}/100. See the full report.`;
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  
+  const twitterShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+  const linkedinShareUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent("Fact-Check Report")}&summary=${encodeURIComponent(shareText)}`;
+
   return (
-    <Card className="w-full" id="report-content">
+    <Card className="w-full shadow-lg" id="report-content">
       <CardHeader className="text-center">
         <div className="mx-auto mb-4">
           <ScoreCircle score={report.truthScore} />
@@ -69,10 +75,22 @@ export function ReportDisplay({ report }: ReportDisplayProps) {
             )}
         </div>
       </CardContent>
-      <CardFooter className="justify-center">
-         <Button variant="outline" onClick={handlePrint}>
+      <CardFooter className="flex-col sm:flex-row justify-center gap-2">
+         <Button variant="outline" onClick={handlePrint} className="transition-transform hover:scale-105 hover:shadow-lg">
             <FileDown className="mr-2 h-4 w-4" />
             Download as PDF
+        </Button>
+         <Button asChild variant="outline" className="transition-transform hover:scale-105 hover:shadow-lg">
+            <a href={twitterShareUrl} target="_blank" rel="noopener noreferrer">
+                <Twitter className="mr-2 h-4 w-4" />
+                Share on Twitter
+            </a>
+        </Button>
+         <Button asChild variant="outline" className="transition-transform hover:scale-105 hover:shadow-lg">
+            <a href={linkedinShareUrl} target="_blank" rel="noopener noreferrer">
+                <Linkedin className="mr-2 h-4 w-4" />
+                Share on LinkedIn
+            </a>
         </Button>
       </CardFooter>
     </Card>
