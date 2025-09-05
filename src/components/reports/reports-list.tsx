@@ -17,6 +17,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { AlertTriangle } from "lucide-react";
+import Link from 'next/link';
 
 const getVerdictVariant = (verdict: string): "default" | "secondary" | "destructive" | "outline" => {
     const lowerVerdict = verdict.toLowerCase();
@@ -50,9 +53,14 @@ export function ReportsList() {
           })) as Report[];
           
           setReports(reportsData);
-        } catch (error: any) {
-          console.error("Error fetching reports:", error);
-          setError("Failed to fetch reports. Please check your Firestore security rules and ensure the necessary indexes are built. The error was: " + error.message);
+        } catch (err: any) {
+          console.error("Error fetching reports:", err);
+          if (err.code === 'failed-precondition') {
+             const indexQuery = `https://console.firebase.google.com/v1/r/project/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/firestore/indexes?create_composite=ClBwcm9qZWN0cy90cnV0aC1sZW5zLXo2d3d4L2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy9yZXBvcnRzL2luZGV4ZXMvXxABGgoKBnVzZXJJZBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI`;
+             setError(`This query requires a Firestore index. Please create it by clicking the link below, and then refresh this page. This is a one-time setup. Error: ${err.message}. You can create the index here: ${indexQuery}`);
+          } else {
+             setError(`An error occurred while fetching reports: ${err.message}`);
+          }
         } finally {
           setLoading(false);
         }
@@ -78,12 +86,22 @@ export function ReportsList() {
   }
 
   if (error) {
+     const urlRegex = /(https?:\/\/[^\s]+)/g;
+     const parts = error.split(urlRegex);
      return (
         <Card className="text-center py-12 bg-destructive/10 border-destructive">
             <CardHeader>
                 <CardTitle className="text-destructive">An Error Occurred</CardTitle>
-                <CardDescription className="text-destructive/80 break-all">
-                    {error}
+                <CardDescription className="text-destructive/80 break-words">
+                   {parts.map((part, index) =>
+                      urlRegex.test(part) ? (
+                        <Link key={index} href={part} target="_blank" className="underline font-bold">
+                          Create Index
+                        </Link>
+                      ) : (
+                        part
+                      )
+                    )}
                 </CardDescription>
             </CardHeader>
         </Card>
