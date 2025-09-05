@@ -193,7 +193,7 @@ export function ClaimForm({ onReportGenerated }: ClaimFormProps) {
 
   const prevStep = () => {
       if (currentStep > 0) {
-          setCurrentStep(step => step + 1);
+          setCurrentStep(step => step - 1);
       }
   }
 
@@ -217,9 +217,9 @@ export function ClaimForm({ onReportGenerated }: ClaimFormProps) {
                     <motion.div
                         animate={{ scale: [1, 1.2, 1] }}
                         transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
-                        className="bg-primary/20 rounded-full p-6"
+                        className="bg-primary/20 rounded-full p-8"
                     >
-                        <Mic className="h-16 w-16 text-primary-foreground" />
+                        <Mic className="h-24 w-24 text-primary-foreground" />
                     </motion.div>
                     <p className="text-primary-foreground font-medium text-lg">Listening... Click here to stop.</p>
                 </motion.div>
