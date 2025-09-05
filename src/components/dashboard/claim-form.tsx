@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
@@ -58,6 +59,7 @@ export function ClaimForm({ onReportGenerated }: ClaimFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const { user } = useAuth();
   const [isRecording, setIsRecording] = useState(false);
+  const [isListening, setIsListening] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -92,12 +94,16 @@ export function ClaimForm({ onReportGenerated }: ClaimFormProps) {
         description: `An error occurred: ${event.error}. Please try again.`,
       });
       setIsRecording(false);
+      setIsListening(false);
     };
     
+    recognition.onstart = () => {
+        setIsListening(true);
+    };
+
     recognition.onend = () => {
-      if(isRecording) { // If it stops unexpectedly, stop UI recording state
         setIsRecording(false);
-      }
+        setIsListening(false);
     };
 
     return () => {
@@ -105,7 +111,7 @@ export function ClaimForm({ onReportGenerated }: ClaimFormProps) {
         recognition.stop();
       }
     };
-  }, [form, toast, isRecording]);
+  }, [form, toast]);
 
 
   const handleMicClick = () => {
@@ -121,21 +127,21 @@ export function ClaimForm({ onReportGenerated }: ClaimFormProps) {
     if (isRecording) {
       recognition.stop();
       setIsRecording(false);
+      setIsListening(false);
     } else {
       try {
-        recognition.start();
-        setIsRecording(true);
+        if(recognition.state === 'inactive') {
+            recognition.start();
+            setIsRecording(true);
+        }
       } catch (e: any) {
-        // This can happen if recognition is already started.
-        if (e.name === 'InvalidStateError') {
-          console.warn('Speech recognition already started.');
-        } else {
           toast({
             variant: "destructive",
             title: "Speech Recognition Error",
             description: e.message || "Could not start voice recognition.",
           });
-        }
+          setIsRecording(false);
+          setIsListening(false);
       }
     }
   };
@@ -187,12 +193,40 @@ export function ClaimForm({ onReportGenerated }: ClaimFormProps) {
 
   const prevStep = () => {
       if (currentStep > 0) {
-          setCurrentStep(step => step - 1);
+          setCurrentStep(step => step + 1);
       }
   }
 
   return (
     <>
+      <AnimatePresence>
+        {isListening && (
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center backdrop-blur-sm"
+                onClick={handleMicClick}
+            >
+                <motion.div
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                    className="flex flex-col items-center gap-4"
+                >
+                    <motion.div
+                        animate={{ scale: [1, 1.2, 1] }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+                        className="bg-primary/20 rounded-full p-6"
+                    >
+                        <Mic className="h-16 w-16 text-primary-foreground" />
+                    </motion.div>
+                    <p className="text-primary-foreground font-medium text-lg">Listening... Click here to stop.</p>
+                </motion.div>
+            </motion.div>
+        )}
+      </AnimatePresence>
+
       <Card className="shadow-lg backdrop-blur-md border-white/20 bg-card animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
         <CardHeader>
           <motion.div
