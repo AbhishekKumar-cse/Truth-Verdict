@@ -122,8 +122,21 @@ export function ClaimForm({ onReportGenerated }: ClaimFormProps) {
       recognition.stop();
       setIsRecording(false);
     } else {
-      recognition.start();
-      setIsRecording(true);
+      try {
+        recognition.start();
+        setIsRecording(true);
+      } catch (e: any) {
+        // This can happen if recognition is already started.
+        if (e.name === 'InvalidStateError') {
+          console.warn('Speech recognition already started.');
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Speech Recognition Error",
+            description: e.message || "Could not start voice recognition.",
+          });
+        }
+      }
     }
   };
 
