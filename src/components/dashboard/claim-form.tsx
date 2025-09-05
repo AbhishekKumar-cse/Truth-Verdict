@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2, HelpCircle, Lightbulb, ChevronRight, ChevronLeft, Send, Sparkles } from "lucide-react";
+import { Loader2, HelpCircle, Lightbulb, ChevronRight, ChevronLeft, Send, Sparkles, Mic, MicOff } from "lucide-react";
 import type { ReportWithId } from "@/app/(app)/dashboard/page";
 import { useAuth } from "@/hooks/use-auth";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -40,12 +40,24 @@ const formSteps = [
     { id: 'step3', title: 'Review & Submit' }
 ];
 
+// Reference for SpeechRecognition
+let recognition: any = null;
+if (typeof window !== "undefined") {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.lang = 'en-US';
+  }
+}
+
 export function ClaimForm({ onReportGenerated }: ClaimFormProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const { user } = useAuth();
+  const [isRecording, setIsRecording] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,6 +67,66 @@ export function ClaimForm({ onReportGenerated }: ClaimFormProps) {
       sourceUrl: "",
     },
   });
+  
+  useEffect(() => {
+    if (!recognition) return;
+
+    recognition.onresult = (event: any) => {
+      let finalTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        }
+      }
+      if (finalTranscript) {
+        const currentStatement = form.getValues('statement');
+        form.setValue('statement', currentStatement ? `${currentStatement} ${finalTranscript.trim()}` : finalTranscript.trim());
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error", event.error);
+      toast({
+        variant: "destructive",
+        title: "Speech Recognition Error",
+        description: `An error occurred: ${event.error}. Please try again.`,
+      });
+      setIsRecording(false);
+    };
+    
+    recognition.onend = () => {
+      if(isRecording) { // If it stops unexpectedly, stop UI recording state
+        setIsRecording(false);
+      }
+    };
+
+    return () => {
+      if (recognition) {
+        recognition.stop();
+      }
+    };
+  }, [form, toast, isRecording]);
+
+
+  const handleMicClick = () => {
+    if (!recognition) {
+      toast({
+        variant: "destructive",
+        title: "Unsupported Browser",
+        description: "Your browser does not support voice recognition.",
+      });
+      return;
+    }
+
+    if (isRecording) {
+      recognition.stop();
+      setIsRecording(false);
+    } else {
+      recognition.start();
+      setIsRecording(true);
+    }
+  };
+
 
   const statementWordCount = form.watch('statement')?.length || 0;
   
@@ -169,22 +241,36 @@ export function ClaimForm({ onReportGenerated }: ClaimFormProps) {
                           name="statement"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="flex items-center gap-2">
-                                Full Statement
+                              <div className="flex justify-between items-center">
+                                <FormLabel className="flex items-center gap-2">
+                                  Full Statement
+                                  <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Provide the complete text of the claim for a more accurate analysis.</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                  </TooltipProvider>
+                                </FormLabel>
                                 <TooltipProvider>
-                                 <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Provide the complete text of the claim for a more accurate analysis.</p>
-                                  </TooltipContent>
-                                </Tooltip>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button type="button" variant="ghost" size="icon" onClick={handleMicClick} className={`h-8 w-8 ${isRecording ? 'text-destructive' : ''}`}>
+                                        {isRecording ? <MicOff /> : <Mic />}
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{isRecording ? 'Stop Recording' : 'Start Recording'}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
                                 </TooltipProvider>
-                              </FormLabel>
+                              </div>
                               <FormControl>
                                 <Textarea
-                                  placeholder="Provide the full text of the claim here..."
+                                  placeholder="Provide the full text of the claim here, or use the microphone to dictate..."
                                   className="min-h-[120px]"
                                   {...field}
                                 />
