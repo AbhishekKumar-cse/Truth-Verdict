@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebase-admin";
+import { getAdminDb } from "@/lib/firebase-admin";
 
 // Fetch reports
 export async function GET() {
+  const adminDb = getAdminDb();
   if (!adminDb) {
     return NextResponse.json({ success: false, error: "Firebase Admin not initialized" }, { status: 500 });
   }
@@ -20,6 +21,7 @@ export async function GET() {
 
 // Save new report
 export async function POST(req: Request) {
+  const adminDb = getAdminDb();
   if (!adminDb) {
     return NextResponse.json({ success: false, error: "Firebase Admin not initialized" }, { status: 500 });
   }
