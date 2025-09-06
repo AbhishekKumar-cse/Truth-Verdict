@@ -1,12 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getAdminDb } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 
 export async function GET() {
   try {
-    const adminDb = getAdminDb();
-    if (!adminDb) {
-      throw new Error('Firebase Admin SDK not initialized');
-    }
     // Perform a simple read operation to check the connection
     await adminDb.collection('__test__').limit(1).get();
     

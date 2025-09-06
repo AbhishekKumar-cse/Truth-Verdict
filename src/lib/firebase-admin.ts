@@ -1,26 +1,35 @@
-// src/lib/firebase-admin.ts
-import admin from 'firebase-admin';
+import admin from "firebase-admin";
 
-const serviceAccount = {
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'truth-lens-1',
-  clientEmail: process.env.FIREBASE_CLIENT_EMAIL || 'firebase-adminsdk-fbsvc@truth-lens-1.iam.gserviceaccount.com',
-  privateKey: (process.env.FIREBASE_PRIVATE_KEY || '-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDMfknOkSu/KmUO\niqb7LenNmLtZmZ0wvrYK5Qo3aRNtSaI0SZlzIkwyJSCAJMFsXn2RqLGyM6BN45+x\n3o3eqLrq9LxuJ4tENqVFKz9mG53J1Jfe3ITpWRNrLQa+D+TJ1edA3GJQcxIkLbgl\nspLd4/dnTfBUztfiqZLdPj1tWcrfy5vuWvCztJq5qAoA++Xp/IG5VDvU/nCsJ0Ly\ni827B9XcXUVcCNEFjxpquXcYP7lpEx14zqou+AGHJGmjk3nFtAY1sFt8KcFnW0Vv\nLuCEeRu6aw+u3y4fdElaoLiZzZSyWeAunwo16fFj32RRtqLt0QKmT7xlhPTCyEZX\nJPatO8AHAgMBAAECggEAFBZehKwtxztp+uNm1lFvxpKEUNLH2W2nPATv6HqDZIUx\nQ4A5UreueW+8Z6oOPM/ZXarb1BzBi47BDwiRshFFomZEPj1wyKFMW2UnEKfE0hP2\nj5Dk43eTDA07vNIBEBlZfCPjhAvE3yK4lJQ1wuMti3HHmmUV8td9rD4v0laM/0er\nDCu9Oik0crt+JSBHLD4N2CB4xl8Y6UsEJEcwcH+tVAgx3xjLJrLcFKadMMThjX2g\noUJwQvZu0j3hSNcZihXQw8se+V1QuK0pFgFhvkkT8zeYcyGD5PxQ3eO+lexgXgYG\n8P4pQ9oWgTxSpBjyynkNGtXAeUPxfebpB4lwy7q/sQKBgQDt1Jl7Jq/wv1/gMhP/\nobwruYiStqg/6hRp6sJwotzdk9iiXEsCMx3KS+1xoGnIhS315yx8IFM4O6ZrQT/i\nUmTMWJWBWM12CrFnO4mFBXIEErVHhCGtDy1mOzGLsmSspwldbW/Ds2bibHbBMga0\nlq8xE1xJdT0UkEDCijDodXRZ0QKBgQDcHbFq8gCILeRpbLsy6wDm8jX/hxvOm9Bb\nqUES41SXcwbbhLUkGp77FLBPmaA0Y8VKGRa/l4SEXKm4FNbwTr8lDtIS+M/ESTX6\n6fon69uXWuaVcNIiNNE22nTGgSI/PRLX6op73O3hAx9kwiJ+HdgIv+NT3W1ZR0BP\nHPKD6vIaVwKBgFgpZTO3paTS7FGJfsxWQhDbV/s65qe6uBKDSczDMqiYs8eL+uo3\n1KU2/DAQzOXeKKltJppkyTShOBGuQGY/MMpnVBR8vL0zPYwND+9Vk2xbGwQFwQ4M\nAEJTUwx79sHhsaEGflXHXS42EtePGdk7unmwuZcpdJj42GjFHVguohDhAoGANkW/\n/A2FYg5mtjPQCGL3SvpHpCSND6lNe3xFBkI1Fk6PT0ruWuORdXkJa+cGIETFXVrI\nSB801mn+ktvYj1HrQVjhJTpiCBTBEYflXTiDYVNRbWFu/m4lc6/zgQpQBmWposE6\nugWkRYm+kNppJM14+ddOVtxO3Od7jMYnaa1hWmsCgYAf7WKev89nAXO2MsFxxtX0\n9gGzl/Ruq7juUZvx5Y1vvlvGlOoMRsgdoh+yUOpM8I+T9UVSfzJ/AADpFpjg+cm9\nu0SAOih7g2xYxB88EfVAgSfFroZb9wpvwPeBNwcuwO6VGlPcjVh7wDjMgwFvhiaX\nzatEpJEfS9NP/hbnyQRTjA==\n-----END PRIVATE KEY-----\n').replace(/\\n/g, '\n'),
-};
+function getServiceAccountFromEnv() {
+  const sa = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (!sa) {
+    // In a local environment, we can fallback to the old method for convenience.
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
-function getFirebaseAdminApp() {
-  if (admin.apps.length > 0) {
-    return admin.apps[0]!;
+    if (!clientEmail || !privateKey || !projectId) {
+      throw new Error("Missing Firebase admin credentials. Set FIREBASE_SERVICE_ACCOUNT or FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY, and NEXT_PUBLIC_FIREBASE_PROJECT_ID.");
+    }
+    return {
+      projectId,
+      clientEmail,
+      privateKey: privateKey.replace(/\\n/g, "\n")
+    };
   }
-  
-  return admin.initializeApp({
+  try {
+    return JSON.parse(sa);
+  } catch (err) {
+    throw new Error("FIREBASE_SERVICE_ACCOUNT must be valid JSON.");
+  }
+}
+
+if (!admin.apps.length) {
+  const serviceAccount = getServiceAccountFromEnv();
+  admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
 }
 
-export function getAdminDb() {
-    return getFirebaseAdminApp().firestore();
-}
-
-export function getAdminAuth() {
-    return getFirebaseAdminApp().auth();
-}
+export const adminDb = admin.firestore();
+export const adminAuth = admin.auth();

@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from "zod";
-import { getAdminDb } from "@/lib/firebase-admin";
+import { adminDb } from "@/lib/firebase-admin";
 import { generateFactCheckReport, GenerateFactCheckReportInput, GenerateFactCheckReportOutput } from "@/ai/flows/generate-fact-check-report";
 import { Timestamp } from "firebase-admin/firestore";
 import type { User } from "firebase/auth";
@@ -15,11 +15,6 @@ const claimSchema = z.object({
 
 export async function submitClaim(values: z.infer<typeof claimSchema>, userId: string): Promise<{ success: boolean; data?: GenerateFactCheckReportOutput & { id: string }; error?: string }> {
   try {
-    const adminDb = getAdminDb();
-    if (!adminDb) {
-      throw new Error("Firebase Admin SDK is not initialized. Please ensure your service account key is configured correctly on the server.");
-    }
-    
     if (!userId) {
       throw new Error("Authentication failed. User not found.");
     }
@@ -57,11 +52,6 @@ export async function submitClaim(values: z.infer<typeof claimSchema>, userId: s
 }
 
 export async function createUserProfile(user: User): Promise<{ success: boolean; error?: string }> {
-  const adminDb = getAdminDb();
-  if (!adminDb) {
-    console.error("Firebase Admin SDK not initialized.");
-    return { success: false, error: "Server configuration error." };
-  }
   if (!user) {
     return { success: false, error: "User not provided." };
   }
