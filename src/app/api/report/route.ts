@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { adminDB } from "@/lib/firebase-admin";
+import { adminDb } from "@/lib/firebase-admin";
 
 // Fetch reports
 export async function GET() {
-  if (!adminDB) {
+  if (!adminDb) {
     return NextResponse.json({ success: false, error: "Firebase Admin not initialized" }, { status: 500 });
   }
   try {
-    const snapshot = await adminDB.collection("reports").get();
+    const snapshot = await adminDb.collection("reports").get();
     const reports = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
@@ -20,12 +20,12 @@ export async function GET() {
 
 // Save new report
 export async function POST(req: Request) {
-  if (!adminDB) {
+  if (!adminDb) {
     return NextResponse.json({ success: false, error: "Firebase Admin not initialized" }, { status: 500 });
   }
   try {
     const body = await req.json();
-    const docRef = await adminDB.collection("reports").add(body);
+    const docRef = await adminDb.collection("reports").add(body);
     return NextResponse.json({ success: true, id: docRef.id });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
