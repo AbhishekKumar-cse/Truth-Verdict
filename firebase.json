@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "truth-lens-z6wwx",
     "public": "out",
     "ignore": [
       "firebase.json",
