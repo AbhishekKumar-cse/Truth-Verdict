@@ -3,6 +3,9 @@ import { adminDB } from "@/lib/firebaseAdmin";
 
 // Fetch reports
 export async function GET() {
+  if (!adminDB) {
+    return NextResponse.json({ success: false, error: "Firebase Admin not initialized" }, { status: 500 });
+  }
   try {
     const snapshot = await adminDB.collection("reports").get();
     const reports = snapshot.docs.map(doc => ({
@@ -17,6 +20,9 @@ export async function GET() {
 
 // Save new report
 export async function POST(req: Request) {
+  if (!adminDB) {
+    return NextResponse.json({ success: false, error: "Firebase Admin not initialized" }, { status: 500 });
+  }
   try {
     const body = await req.json();
     const docRef = await adminDB.collection("reports").add(body);

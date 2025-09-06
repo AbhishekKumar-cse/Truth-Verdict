@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { adminDb } from "@/lib/firebase-admin";
+import { adminDB } from "@/lib/firebaseAdmin";
 import { generateFactCheckReport, GenerateFactCheckReportInput, GenerateFactCheckReportOutput } from "@/ai/flows/generate-fact-check-report";
 import { Timestamp } from "firebase-admin/firestore";
 import type { User } from "firebase/auth";
@@ -15,7 +15,7 @@ const claimSchema = z.object({
 
 export async function submitClaim(values: z.infer<typeof claimSchema>, userId: string): Promise<{ success: boolean; data?: GenerateFactCheckReportOutput & { id: string }; error?: string }> {
   try {
-    if (!adminDb) {
+    if (!adminDB) {
       throw new Error("Firebase Admin SDK is not initialized. Please ensure your service account key is configured correctly on the server.");
     }
     
@@ -44,7 +44,7 @@ export async function submitClaim(values: z.infer<typeof claimSchema>, userId: s
       createdAt: Timestamp.now(),
     };
 
-    const docRef = await adminDb.collection("reports").add(reportData);
+    const docRef = await adminDB.collection("reports").add(reportData);
 
     return { success: true, data: { ...report, id: docRef.id } };
   } catch (error: any) {
@@ -56,7 +56,7 @@ export async function submitClaim(values: z.infer<typeof claimSchema>, userId: s
 }
 
 export async function createUserProfile(user: User): Promise<{ success: boolean; error?: string }> {
-  if (!adminDb) {
+  if (!adminDB) {
     console.error("Firebase Admin SDK not initialized.");
     return { success: false, error: "Server configuration error." };
   }
@@ -65,7 +65,7 @@ export async function createUserProfile(user: User): Promise<{ success: boolean;
   }
 
   try {
-    const userRef = adminDb.collection("users").doc(user.uid);
+    const userRef = adminDB.collection("users").doc(user.uid);
     await userRef.set({
       uid: user.uid,
       displayName: user.displayName,
