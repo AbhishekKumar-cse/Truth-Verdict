@@ -22,7 +22,7 @@ import { Progress } from "@/components/ui/progress";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from "@/components/ui/alert-dialog";
 import Link from 'next/link';
 
-const formSchema = z.object({
+const claimSchema = z.object({
   title: z.string().min(10, "Title must be at least 10 characters.").max(150, "Title must be 150 characters or less."),
   statement: z.string().min(20, "Statement must be at least 20 characters.").max(1000, "Statement must be 1000 characters or less."),
   category: z.string({ required_error: "Please select a category." }),
@@ -61,8 +61,8 @@ export function ClaimForm({ onReportGenerated }: ClaimFormProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isListening, setIsListening] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof claimSchema>>({
+    resolver: zodResolver(claimSchema),
     defaultValues: {
       title: "",
       statement: "",
@@ -149,7 +149,7 @@ export function ClaimForm({ onReportGenerated }: ClaimFormProps) {
 
   const statementWordCount = form.watch('statement')?.length || 0;
   
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof claimSchema>) {
     if (!user) {
         toast({
             variant: "destructive",

@@ -6,12 +6,14 @@ import { generateFactCheckReport, GenerateFactCheckReportInput, GenerateFactChec
 import { Timestamp } from "firebase-admin/firestore";
 import type { User } from "firebase/auth";
 
+// Define the schema here, but don't export it
 const claimSchema = z.object({
   title: z.string(),
   statement: z.string(),
   category: z.string(),
   sourceUrl: z.string().optional(),
 });
+
 
 export async function submitClaim(values: z.infer<typeof claimSchema>, userId: string): Promise<{ success: boolean; data?: GenerateFactCheckReportOutput & { id: string }; error?: string }> {
   try {
