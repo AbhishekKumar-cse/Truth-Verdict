@@ -3,12 +3,12 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY_HERE",
-  authDomain: "truth-lens-z6wwx.firebaseapp.com",
-  projectId: "truth-lens-z6wwx",
-  storageBucket: "truth-lens-z6wwx.appspot.com",
-  messagingSenderId: "365383569427",
-  appId: "1:365383569427:web:82156a31f284e320f785b9",
+  "projectId": "truth-lens-1",
+  "appId": "1:755035155214:web:23ed09256e942f9d84055f",
+  "storageBucket": "truth-lens-1.firebasestorage.app",
+  "apiKey": "AIzaSyB3Xn2M1y-tlN2KQI_WUbPd89GlJfcA-9s",
+  "authDomain": "truth-lens-1.firebaseapp.com",
+  "messagingSenderId": "755035155214"
 };
 
 // Initialize Firebase
