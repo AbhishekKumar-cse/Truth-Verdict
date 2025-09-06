@@ -1,0 +1,17 @@
+[build]
+  # This command is run to build your site.
+  command = "npm run build"
+  # This is the directory that Netlify will deploy. For Next.js, it's always .next
+  publish = ".next"
+
+[build.environment]
+  # Set the Node.js version to be consistent with your local environment.
+  # "18" is a good default for modern Next.js apps.
+  NODE_VERSION = "18"
+  # This flag helps resolve potential dependency conflicts during installation.
+  NPM_FLAGS = "--legacy-peer-deps"
+
+# The following plugin automatically configures your Next.js app on Netlify.
+# It handles redirects, serverless functions, and image optimization.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
