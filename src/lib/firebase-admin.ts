@@ -1,4 +1,4 @@
-'use server';
+//'use server';
 
 import admin from 'firebase-admin';
 
